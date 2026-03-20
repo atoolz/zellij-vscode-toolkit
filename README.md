@@ -33,7 +33,7 @@
 > Smart completions for all 26+ config options with type hints, default values, and documentation.
 
 <p align="center">
-  <img src="assets/demo-completion.svg" alt="Config Completion" width="700">
+  <img src="assets/demo-completion.gif" alt="Config Completion" width="700">
 </p>
 
 ### Keybind & Action Completions
@@ -41,7 +41,7 @@
 > Context-aware completions inside keybind blocks. Suggests modes, bind syntax, and all 53+ actions with parameter hints.
 
 <p align="center">
-  <img src="assets/demo-keybinds.svg" alt="Keybind Completions" width="700">
+  <img src="assets/demo-keybinds.gif" alt="Keybind Completions" width="700">
 </p>
 
 ### Hover Documentation
@@ -49,7 +49,7 @@
 > Hover over any option, action, or mode to see description, valid values, examples, and links to Zellij docs.
 
 <p align="center">
-  <img src="assets/demo-hover.svg" alt="Hover Documentation" width="700">
+  <img src="assets/demo-hover.gif" alt="Hover Documentation" width="700">
 </p>
 
 ### Diagnostics & Validation
@@ -57,7 +57,7 @@
 > Catch errors before launching Zellij. Validates option names, value types, mode names, action names, SwitchToMode targets, and hex colors.
 
 <p align="center">
-  <img src="assets/demo-diagnostics.svg" alt="Diagnostics" width="700">
+  <img src="assets/demo-diagnostics.gif" alt="Diagnostics" width="700">
 </p>
 
 ### Theme Color Preview
@@ -65,7 +65,7 @@
 > Inline color decorators for hex values in theme definitions, with VS Code's native color picker.
 
 <p align="center">
-  <img src="assets/demo-theme.svg" alt="Theme Colors" width="700">
+  <img src="assets/demo-theme.gif" alt="Theme Colors" width="700">
 </p>
 
 ### What's Covered
