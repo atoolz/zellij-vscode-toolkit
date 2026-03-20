@@ -2,7 +2,7 @@
   "name": "zellij-vscode-toolkit",
   "displayName": "Zellij Toolkit",
   "description": "Complete Zellij development toolkit: IntelliSense, validation, color preview, and snippets for config and layout files",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "atoolz",
   "license": "MIT",
   "engines": {

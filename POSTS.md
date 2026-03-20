@@ -18,7 +18,7 @@ Editing Zellij config in KDL without any tooling is painful. You end up going ba
 
 Auto-detects `config.kdl` in your Zellij config directory. Also works with layout files.
 
-GitHub: https://github.com/andreahlert/zellij-config-vscode
+GitHub: https://github.com/atoolz/zellij-vscode-toolkit
 
 Would love feedback on what else would be useful. I'm tracking the KDL v2 migration too.
 
@@ -39,7 +39,7 @@ This extension adds IntelliSense specifically for Zellij:
 - Inline color decorators for theme definitions
 - Auto-detects Zellij config files
 
-GitHub: https://github.com/andreahlert/zellij-config-vscode
+GitHub: https://github.com/atoolz/zellij-vscode-toolkit
 
 ---
 
@@ -53,7 +53,7 @@ If you use Zellij, you know the config has 53 actions, 14 modes, and dozens of o
 
 Built a VS Code extension that gives you completions for everything, catches errors before you launch Zellij, and shows inline color preview for themes.
 
-GitHub: https://github.com/andreahlert/zellij-config-vscode
+GitHub: https://github.com/atoolz/zellij-vscode-toolkit
 
 ---
 
@@ -63,7 +63,7 @@ Sharing a VS Code extension I built for Zellij config/layout files. Provides com
 
 Zero dedicated Zellij extensions existed before this, so this is the first one.
 
-https://github.com/andreahlert/zellij-config-vscode
+https://github.com/atoolz/zellij-vscode-toolkit
 
 Feedback welcome, especially on missing options or actions.
 
@@ -85,7 +85,7 @@ I built a VS Code extension that provides IntelliSense for Zellij config and lay
 
 Would it be useful to mention this in the Zellij docs or community resources?
 
-https://github.com/andreahlert/zellij-config-vscode
+https://github.com/atoolz/zellij-vscode-toolkit
 
 ---
 
@@ -99,6 +99,6 @@ Built the first VS Code extension:
 - color preview for themes
 - auto-detects config.kdl
 
-https://github.com/andreahlert/zellij-config-vscode
+https://github.com/atoolz/zellij-vscode-toolkit
 
 #zellij #vscode #terminal #opensource

@@ -102,7 +102,7 @@
 
 1. Open VS Code
 2. Press `Ctrl+Shift+X` (or `Cmd+Shift+X`)
-3. Search for **"Zellij Config"**
+3. Search for **"Zellij Toolkit"**
 4. Click **Install**
 
 **Command Line:**
@@ -148,7 +148,7 @@ Zellij has **30K+ GitHub stars** and growing fast, but its KDL config format has
 
 ```bash
 git clone https://github.com/atoolz/zellij-vscode-toolkit.git
-cd zellij-config-vscode
+cd zellij-vscode-toolkit
 npm install
 npm run build
 npm run test:e2e
@@ -164,5 +164,5 @@ npm run test:e2e
 ---
 
 <p align="center">
-  <sub>Built for the Zellij community</sub>
+  <sub>Part of the <a href="https://github.com/atoolz">AToolZ</a> toolkit suite</sub>
 </p>
