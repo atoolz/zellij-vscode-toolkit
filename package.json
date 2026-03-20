@@ -2,7 +2,7 @@
   "name": "zellij-vscode-toolkit",
   "displayName": "Zellij Toolkit",
   "description": "Complete Zellij development toolkit: IntelliSense, validation, color preview, and snippets for config and layout files",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "publisher": "atoolz",
   "license": "MIT",
   "engines": {
@@ -22,12 +22,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ahlert/zellij-config-vscode"
+    "url": "https://github.com/atoolz/zellij-vscode-toolkit"
   },
   "bugs": {
-    "url": "https://github.com/ahlert/zellij-config-vscode/issues"
+    "url": "https://github.com/atoolz/zellij-vscode-toolkit/issues"
   },
-  "homepage": "https://github.com/ahlert/zellij-config-vscode#readme",
+  "homepage": "https://github.com/atoolz/zellij-vscode-toolkit#readme",
   "icon": "assets/icon.png",
   "galleryBanner": {
     "color": "#1e1e2e",
