@@ -1,20 +1,20 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="Zellij Config" width="100%">
+  <img src="assets/banner.png" alt="Zellij Toolkit" width="100%">
 </p>
 
 <p align="center">
-  <strong>IntelliSense, validation, and documentation for Zellij configuration and layout files.</strong>
+  <strong>Complete Zellij development toolkit: IntelliSense, validation, color preview, and snippets for config and layout files.</strong>
 </p>
 
 <p align="center">
-  <a href="https://marketplace.visualstudio.com/items?itemName=ahlert.zellij-config">
-    <img src="https://img.shields.io/visual-studio-marketplace/v/ahlert.zellij-config?style=flat-square&label=VS%20Marketplace&color=ab47bc" alt="Version">
+  <a href="https://marketplace.visualstudio.com/items?itemName=andreahlert.zellij-vscode-toolkit">
+    <img src="https://img.shields.io/visual-studio-marketplace/v/andreahlert.zellij-vscode-toolkit?style=flat-square&label=VS%20Marketplace&color=ab47bc" alt="Version">
   </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=ahlert.zellij-config">
-    <img src="https://img.shields.io/visual-studio-marketplace/i/ahlert.zellij-config?style=flat-square&label=Installs&color=ab47bc" alt="Installs">
+  <a href="https://marketplace.visualstudio.com/items?itemName=andreahlert.zellij-vscode-toolkit">
+    <img src="https://img.shields.io/visual-studio-marketplace/i/andreahlert.zellij-vscode-toolkit?style=flat-square&label=Installs&color=ab47bc" alt="Installs">
   </a>
-  <a href="https://github.com/ahlert/zellij-config-vscode/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/ahlert/zellij-config-vscode?style=flat-square&color=ab47bc" alt="License">
+  <a href="https://github.com/andreahlert/zellij-vscode-toolkit/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/andreahlert/zellij-vscode-toolkit?style=flat-square&color=ab47bc" alt="License">
   </a>
   <img src="https://img.shields.io/badge/Zellij-0.41+-ab47bc?style=flat-square" alt="Zellij">
   <img src="https://img.shields.io/badge/KDL-v1-ab47bc?style=flat-square" alt="KDL v1">
@@ -33,7 +33,7 @@
 > Smart completions for all 26+ config options with type hints, default values, and documentation.
 
 <p align="center">
-  <img src="assets/demo-completion.gif" alt="Config Completion" width="700">
+  <img src="assets/demo-completion.svg" alt="Config Completion" width="700">
 </p>
 
 ### Keybind & Action Completions
@@ -41,7 +41,7 @@
 > Context-aware completions inside keybind blocks. Suggests modes, bind syntax, and all 53+ actions with parameter hints.
 
 <p align="center">
-  <img src="assets/demo-keybinds.gif" alt="Keybind Completions" width="700">
+  <img src="assets/demo-keybinds.svg" alt="Keybind Completions" width="700">
 </p>
 
 ### Hover Documentation
@@ -49,7 +49,7 @@
 > Hover over any option, action, or mode to see description, valid values, examples, and links to Zellij docs.
 
 <p align="center">
-  <img src="assets/demo-hover.gif" alt="Hover Documentation" width="700">
+  <img src="assets/demo-hover.svg" alt="Hover Documentation" width="700">
 </p>
 
 ### Diagnostics & Validation
@@ -57,7 +57,7 @@
 > Catch errors before launching Zellij. Validates option names, value types, mode names, action names, SwitchToMode targets, and hex colors.
 
 <p align="center">
-  <img src="assets/demo-diagnostics.gif" alt="Diagnostics" width="700">
+  <img src="assets/demo-diagnostics.svg" alt="Diagnostics" width="700">
 </p>
 
 ### Theme Color Preview
@@ -65,7 +65,7 @@
 > Inline color decorators for hex values in theme definitions, with VS Code's native color picker.
 
 <p align="center">
-  <img src="assets/demo-theme.gif" alt="Theme Colors" width="700">
+  <img src="assets/demo-theme.svg" alt="Theme Colors" width="700">
 </p>
 
 ### What's Covered
@@ -108,7 +108,7 @@
 **Command Line:**
 
 ```bash
-code --install-extension ahlert.zellij-config
+code --install-extension andreahlert.zellij-vscode-toolkit
 ```
 
 <br>
@@ -147,7 +147,7 @@ Zellij has **30K+ GitHub stars** and growing fast, but its KDL config format has
 ## Contributing
 
 ```bash
-git clone https://github.com/ahlert/zellij-config-vscode.git
+git clone https://github.com/andreahlert/zellij-vscode-toolkit.git
 cd zellij-config-vscode
 npm install
 npm run build
