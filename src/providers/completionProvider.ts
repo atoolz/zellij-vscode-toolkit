@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { getKdlContext } from '../utils/kdlParser';
+import { outputChannel } from '../extension';
 import { configOptions, uiOptions, topLevelBlocks, themeColors } from '../data/options';
 import { actions } from '../data/actions';
 import { keybindBlocks, modeNames } from '../data/modes';
@@ -13,6 +14,18 @@ export class ZellijCompletionProvider implements vscode.CompletionItemProvider {
         position: vscode.Position,
         _token: vscode.CancellationToken,
         _context: vscode.CompletionContext
+    ): vscode.CompletionItem[] | undefined {
+        try {
+            return this.doProvideCompletionItems(document, position);
+        } catch (err) {
+            outputChannel?.appendLine(`Completion error: ${err}`);
+            return undefined;
+        }
+    }
+
+    private doProvideCompletionItems(
+        document: vscode.TextDocument,
+        position: vscode.Position,
     ): vscode.CompletionItem[] | undefined {
         const ctx = getKdlContext(document, position);
 
@@ -317,9 +330,6 @@ export class ZellijCompletionProvider implements vscode.CompletionItemProvider {
 
     private getStringCompletions(ctx: ReturnType<typeof getKdlContext>, document: vscode.TextDocument): vscode.CompletionItem[] | undefined {
         const items: vscode.CompletionItem[] = [];
-
-        // Mode name completions inside SwitchToMode or default_mode strings
-        const line = document.lineAt(ctx.path.length > 0 ? document.lineCount - 1 : 0).text;
 
         if (ctx.path.includes('keybinds')) {
             // Could be a mode name in shared_except/shared_among

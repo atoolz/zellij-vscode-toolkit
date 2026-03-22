@@ -49,19 +49,16 @@ function isInZellijDirectory(filePath: string): boolean {
         return true;
     }
 
-    // Any path containing 'zellij' as a directory component
-    const parts = normalized.split('/');
-    for (const part of parts) {
-        if (part.toLowerCase() === 'zellij') {
-            return true;
-        }
+    // XDG config dirs with zellij
+    if (/\/zellij\/(layouts|themes)\//.test(normalized)) {
+        return true;
     }
 
     return false;
 }
 
 /**
- * Checks if the document starts with a Zellij marker comment.
+ * Checks if the document has a Zellij marker comment in its first 5 lines.
  */
 function hasZellijMarker(document: vscode.TextDocument): boolean {
     const maxLines = Math.min(5, document.lineCount);
@@ -79,7 +76,9 @@ function hasZellijMarker(document: vscode.TextDocument): boolean {
  * Looks for Zellij-specific top-level keywords.
  */
 function hasZellijContent(document: vscode.TextDocument): boolean {
-    const text = document.getText();
+    const maxLines = Math.min(200, document.lineCount);
+    const endPos = new vscode.Position(maxLines, 0);
+    const text = document.getText(new vscode.Range(new vscode.Position(0, 0), endPos));
     const zellijKeywords = [
         'keybinds',
         'themes',
@@ -150,13 +149,16 @@ function trySetZellijLanguage(document: vscode.TextDocument): void {
     }
 
     if (isZellijFile(document)) {
-        vscode.languages.setTextDocumentLanguage(document, 'zellij-kdl');
+        vscode.languages.setTextDocumentLanguage(document, 'zellij-kdl').then(
+            undefined,
+            () => { /* document may have been closed before language could be set */ }
+        );
     }
 }
 
 /**
  * Detects if the current file is a layout file (as opposed to a config file).
- * Layout files have a top-level `layout` node.
+ * Checks for a `layout` block at any indentation level.
  */
 export function isLayoutFile(document: vscode.TextDocument): boolean {
     const text = document.getText();

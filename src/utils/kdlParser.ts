@@ -114,7 +114,7 @@ function isInsideComment(fullText: string, linePrefix: string): boolean {
     return opens > closes;
 }
 
-function removeStrings(text: string): string {
+export function removeStrings(text: string): string {
     return text.replace(/"(?:[^"\\]|\\.)*"/g, '""');
 }
 

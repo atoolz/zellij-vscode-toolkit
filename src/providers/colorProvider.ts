@@ -1,29 +1,52 @@
 import * as vscode from 'vscode';
+import { removeStrings } from '../utils/kdlParser';
+import { outputChannel } from '../extension';
 
 export class ZellijColorProvider implements vscode.DocumentColorProvider {
     provideDocumentColors(
         document: vscode.TextDocument,
         _token: vscode.CancellationToken
     ): vscode.ColorInformation[] {
+        try {
+            return this.doProvideDocumentColors(document);
+        } catch (err) {
+            outputChannel?.appendLine(`Color provider error: ${err}`);
+            return [];
+        }
+    }
+
+    private doProvideDocumentColors(document: vscode.TextDocument): vscode.ColorInformation[] {
         const config = vscode.workspace.getConfiguration('zellijConfig');
         if (!config.get('enableColorDecorators', true)) {
             return [];
         }
 
         const colors: vscode.ColorInformation[] = [];
-        const text = document.getText();
 
         // Track if we're inside a themes block
         let inThemes = false;
         let braceDepth = 0;
         let themesDepth = 0;
+        let inBlockComment = false;
 
         for (let i = 0; i < document.lineCount; i++) {
             const line = document.lineAt(i);
             const trimmed = line.text.trim();
 
+            // Track multi-line block comments
+            if (inBlockComment) {
+                if (trimmed.includes('*/')) {
+                    inBlockComment = false;
+                }
+                continue;
+            }
+
             // Skip comments
-            if (trimmed.startsWith('//') || trimmed.startsWith('/*')) {
+            if (trimmed.startsWith('//')) continue;
+            if (trimmed.startsWith('/*')) {
+                if (!trimmed.includes('*/')) {
+                    inBlockComment = true;
+                }
                 continue;
             }
 
@@ -33,8 +56,9 @@ export class ZellijColorProvider implements vscode.DocumentColorProvider {
                 themesDepth = braceDepth;
             }
 
-            const opens = (trimmed.match(/\{/g) || []).length;
-            const closes = (trimmed.match(/\}/g) || []).length;
+            const strippedLine = removeStrings(trimmed);
+            const opens = (strippedLine.match(/\{/g) || []).length;
+            const closes = (strippedLine.match(/\}/g) || []).length;
             braceDepth += opens - closes;
 
             if (inThemes && braceDepth <= themesDepth) {

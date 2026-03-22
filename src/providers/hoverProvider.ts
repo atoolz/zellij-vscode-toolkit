@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { getWordAtPosition, getKdlContext } from '../utils/kdlParser';
+import { outputChannel } from '../extension';
 import { configOptions, uiOptions, topLevelBlocks, themeColors } from '../data/options';
 import { actions } from '../data/actions';
 import { modes, keybindBlocks } from '../data/modes';
@@ -11,6 +12,18 @@ export class ZellijHoverProvider implements vscode.HoverProvider {
         document: vscode.TextDocument,
         position: vscode.Position,
         _token: vscode.CancellationToken
+    ): vscode.Hover | undefined {
+        try {
+            return this.doProvideHover(document, position);
+        } catch (err) {
+            outputChannel?.appendLine(`Hover error: ${err}`);
+            return undefined;
+        }
+    }
+
+    private doProvideHover(
+        document: vscode.TextDocument,
+        position: vscode.Position,
     ): vscode.Hover | undefined {
         const word = getWordAtPosition(document, position);
         if (!word) {

@@ -7,7 +7,12 @@ import { setupAutoDetection } from './utils/configDetector';
 
 const LANGUAGE_ID = 'zellij-kdl';
 
+export let outputChannel: vscode.OutputChannel;
+
 export function activate(context: vscode.ExtensionContext) {
+    outputChannel = vscode.window.createOutputChannel('Zellij Config');
+    context.subscriptions.push(outputChannel);
+
     const selector: vscode.DocumentSelector = { language: LANGUAGE_ID };
 
     // Auto-detect Zellij KDL files
@@ -60,7 +65,16 @@ export function activate(context: vscode.ExtensionContext) {
     // Command: Open Zellij Documentation
     context.subscriptions.push(
         vscode.commands.registerCommand('zellij-config.openDocs', () => {
-            vscode.env.openExternal(vscode.Uri.parse('https://zellij.dev/documentation'));
+            vscode.env.openExternal(vscode.Uri.parse('https://zellij.dev/documentation')).then(
+                (success) => {
+                    if (!success) {
+                        vscode.window.showWarningMessage('Could not open Zellij documentation in browser.');
+                    }
+                },
+                () => {
+                    vscode.window.showWarningMessage('Failed to open Zellij documentation.');
+                }
+            );
         })
     );
 }

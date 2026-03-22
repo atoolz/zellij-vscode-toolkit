@@ -4,6 +4,8 @@ import { actions } from '../data/actions';
 import { modeNames } from '../data/modes';
 import { isLayoutFile } from '../utils/configDetector';
 import { layoutElements } from '../data/layoutElements';
+import { removeStrings } from '../utils/kdlParser';
+import { outputChannel } from '../extension';
 
 const ALL_OPTION_NAMES = new Set(configOptions.map(o => o.name));
 const ALL_UI_OPTION_NAMES = new Set(uiOptions.map(o => o.name));
@@ -14,6 +16,10 @@ const ALL_LAYOUT_ELEMENT_NAMES = new Set(layoutElements.map(e => e.name));
 const TOP_LEVEL_BLOCKS = new Set(['keybinds', 'themes', 'plugins', 'load_plugins', 'ui', 'env']);
 const KEYBIND_BLOCKS = new Set([...modeNames, 'shared', 'shared_except', 'shared_among', 'tmux']);
 const THEME_COLORS = new Set(['fg', 'bg', 'black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'orange']);
+
+function escapeRegExp(s: string): string {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 export class ZellijDiagnosticProvider {
     private diagnosticCollection: vscode.DiagnosticCollection;
@@ -48,6 +54,15 @@ export class ZellijDiagnosticProvider {
     }
 
     validate(document: vscode.TextDocument): void {
+        try {
+            this.doValidate(document);
+        } catch (err) {
+            outputChannel?.appendLine(`Diagnostic error: ${err}`);
+            this.diagnosticCollection.delete(document.uri);
+        }
+    }
+
+    private doValidate(document: vscode.TextDocument): void {
         const config = vscode.workspace.getConfiguration('zellijConfig');
         if (!config.get('enableValidation', true)) {
             this.diagnosticCollection.delete(document.uri);
@@ -55,23 +70,37 @@ export class ZellijDiagnosticProvider {
         }
 
         const diagnostics: vscode.Diagnostic[] = [];
-        const text = document.getText();
         const isLayout = isLayoutFile(document);
 
         const contextStack: string[] = [];
+        let inBlockComment = false;
 
         for (let i = 0; i < document.lineCount; i++) {
             const line = document.lineAt(i);
             const trimmed = line.text.trim();
 
-            // Skip comments and empty lines
-            if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('/*')) {
+            // Track multi-line block comments
+            if (inBlockComment) {
+                if (trimmed.includes('*/')) {
+                    inBlockComment = false;
+                }
                 continue;
             }
 
-            // Track brace nesting
-            const opens = (trimmed.match(/\{/g) || []).length;
-            const closes = (trimmed.match(/\}/g) || []).length;
+            // Skip comments and empty lines
+            if (!trimmed) continue;
+            if (trimmed.startsWith('//')) continue;
+            if (trimmed.startsWith('/*')) {
+                if (!trimmed.includes('*/')) {
+                    inBlockComment = true;
+                }
+                continue;
+            }
+
+            // Track brace nesting (strip strings first to avoid counting braces inside them)
+            const stripped = removeStrings(trimmed);
+            const opens = (stripped.match(/\{/g) || []).length;
+            const closes = (stripped.match(/\}/g) || []).length;
 
             // Extract node name from line
             const nodeMatch = trimmed.match(/^([\w][\w-]*)/);
@@ -90,7 +119,7 @@ export class ZellijDiagnosticProvider {
             }
 
             if (closes > opens) {
-                for (let j = 0; j < closes - opens; j++) {
+                for (let j = 0; j < closes - opens && contextStack.length > 0; j++) {
                     contextStack.pop();
                 }
             }
@@ -209,7 +238,7 @@ export class ZellijDiagnosticProvider {
             const option = configOptions.find(o => o.name === nodeName);
             if (option) {
                 if (option.type === 'boolean') {
-                    const valueMatch = trimmed.match(new RegExp(`^${nodeName}\\s+(.+?)\\s*;?\\s*$`));
+                    const valueMatch = trimmed.match(new RegExp(`^${escapeRegExp(nodeName)}\\s+(.+?)\\s*;?\\s*$`));
                     if (valueMatch) {
                         const value = valueMatch[1].replace(/"/g, '');
                         if (value !== 'true' && value !== 'false') {
@@ -229,7 +258,7 @@ export class ZellijDiagnosticProvider {
                 }
 
                 if (option.type === 'enum' && option.values) {
-                    const valueMatch = trimmed.match(new RegExp(`^${nodeName}\\s+"?([^"\\s;]+)"?`));
+                    const valueMatch = trimmed.match(new RegExp(`^${escapeRegExp(nodeName)}\\s+"?([^"\\s;]+)"?`));
                     if (valueMatch) {
                         const value = valueMatch[1];
                         if (!option.values.includes(value)) {
@@ -249,7 +278,7 @@ export class ZellijDiagnosticProvider {
                 }
 
                 if (option.type === 'number') {
-                    const valueMatch = trimmed.match(new RegExp(`^${nodeName}\\s+(.+?)\\s*;?\\s*$`));
+                    const valueMatch = trimmed.match(new RegExp(`^${escapeRegExp(nodeName)}\\s+(.+?)\\s*;?\\s*$`));
                     if (valueMatch) {
                         const value = valueMatch[1].replace(/"/g, '');
                         if (!/^\d+$/.test(value)) {
@@ -272,8 +301,8 @@ export class ZellijDiagnosticProvider {
     }
 
     private validateActions(line: vscode.TextLine, diagnostics: vscode.Diagnostic[]): void {
-        const text = line.text;
-        // Match PascalCase words that look like action names
+        const text = removeStrings(line.text);
+        // Match PascalCase words that look like action names (after stripping strings)
         const actionPattern = /\b([A-Z][a-zA-Z]+)\b/g;
         let match;
 
