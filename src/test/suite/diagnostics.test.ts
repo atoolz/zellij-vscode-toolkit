@@ -51,9 +51,46 @@ suite('Zellij Diagnostic Provider', () => {
         assert.ok(diags.some(d => d.message.includes('hex color') || d.message.includes('#RRGGBB')), 'Should flag short hex');
     });
 
-    test('warns on unknown theme color', async () => {
-        const diags = zellijDiags(await getDiagnostics('themes {\n    bad {\n        unknown_color "#000000"\n    }\n}'));
-        assert.ok(diags.some(d => d.message.includes('Unknown theme color')), 'Should flag unknown color');
+    test('warns on unknown theme key', async () => {
+        const diags = zellijDiags(await getDiagnostics('themes {\n    bad {\n        unknown_style "#000000"\n    }\n}'));
+        assert.ok(diags.some(d => d.message.includes('Unknown theme key')), 'Should flag unknown theme key');
+    });
+
+    test('accepts named style blocks (Zellij 0.43+ theme format)', async () => {
+        const diags = zellijDiags(await getDiagnostics(
+            'themes {\n' +
+            '    mytheme {\n' +
+            '        text_unselected {\n' +
+            '            base 98 114 164\n' +
+            '            background 33 34 44\n' +
+            '            emphasis_0 255 184 108\n' +
+            '        }\n' +
+            '        ribbon_selected {\n' +
+            '            base 0 0 0\n' +
+            '            background 80 250 123\n' +
+            '        }\n' +
+            '        multiplayer_user_colors {\n' +
+            '            player_1 255 0 0\n' +
+            '            player_10 0 0 255\n' +
+            '        }\n' +
+            '    }\n' +
+            '}'
+        ));
+        assert.strictEqual(diags.length, 0, `Should accept named style blocks, got: ${diags.map(d => d.message).join(', ')}`);
+    });
+
+    test('warns on unknown key inside a style block', async () => {
+        const diags = zellijDiags(await getDiagnostics(
+            'themes {\n    mytheme {\n        text_unselected {\n            backgroundx 1 2 3\n        }\n    }\n}'
+        ));
+        assert.ok(diags.some(d => d.message.includes('Unknown key')), 'Should flag unknown style field');
+    });
+
+    test('warns on unknown multiplayer player color', async () => {
+        const diags = zellijDiags(await getDiagnostics(
+            'themes {\n    mytheme {\n        multiplayer_user_colors {\n            player_11 1 2 3\n        }\n    }\n}'
+        ));
+        assert.ok(diags.some(d => d.message.includes('player_11')), 'Should flag player_11');
     });
 
     test('errors on invalid SwitchToMode target', async () => {
@@ -69,7 +106,15 @@ default_mode "normal"
 mouse_mode true
 scroll_buffer_size 10000
 theme "dracula"
-on_force_close "detach"`;
+on_force_close "detach"
+pane_frame_style "full"
+show_startup_tips false
+show_release_notes false
+mouse_hover_tips false
+mouse_hover_effects false
+advanced_mouse_actions false
+stacked_pane_list false
+word_separators "[]{}<>()"`;
         const diags = zellijDiags(await getDiagnostics(validConfig));
         assert.strictEqual(diags.length, 0, `Should have no diagnostics for valid config, got: ${diags.map(d => d.message).join(', ')}`);
     });

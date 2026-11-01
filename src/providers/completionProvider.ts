@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { getKdlContext } from '../utils/kdlParser';
 import { logError } from '../extension';
-import { configOptions, uiOptions, topLevelBlocks, themeColors } from '../data/options';
+import { configOptions, uiOptions, topLevelBlocks, themeColors, themeStyleKeys, styleDeclarationKeys, multiplayerColorKeys } from '../data/options';
 import { actions } from '../data/actions';
 import { keybindBlocks, modeNames } from '../data/modes';
 import { layoutElements, getAttributesForElement } from '../data/layoutElements';
@@ -209,17 +209,56 @@ export class ZellijCompletionProvider implements vscode.CompletionItemProvider {
             // Suggest a new theme name
             const item = new vscode.CompletionItem('mytheme', vscode.CompletionItemKind.Color);
             item.documentation = new vscode.MarkdownString('Define a new color theme. Replace "mytheme" with your theme name.');
-            item.insertText = new vscode.SnippetString('${1:mytheme} {\n\tfg "${2:#ffffff}"\n\tbg "${3:#000000}"\n\tblack "${4:#000000}"\n\tred "${5:#ff0000}"\n\tgreen "${6:#00ff00}"\n\tyellow "${7:#ffff00}"\n\tblue "${8:#0000ff}"\n\tmagenta "${9:#ff00ff}"\n\tcyan "${10:#00ffff}"\n\twhite "${11:#ffffff}"\n\torange "${12:#ff8800}"\n}');
+            item.insertText = new vscode.SnippetString(
+                '${1:mytheme} {\n' +
+                '\ttext_unselected {\n\t\tbase ${2:255} ${3:255} ${4:255}\n\t\tbackground ${5:0} ${6:0} ${7:0}\n\t}\n' +
+                '\ttext_selected {\n\t\tbase ${8:255} ${9:255} ${10:255}\n\t\tbackground ${11:0} ${12:0} ${13:0}\n\t}\n' +
+                '\tribbon_unselected {\n\t\tbase ${14:255} ${15:255} ${16:255}\n\t\tbackground ${17:0} ${18:0} ${19:0}\n\t}\n' +
+                '\tribbon_selected {\n\t\tbase ${20:0} ${21:0} ${22:0}\n\t\tbackground ${23:255} ${24:255} ${25:255}\n\t}\n' +
+                '}'
+            );
             items.push(item);
         }
 
         if (ctx.depth === 2) {
-            // Inside a theme, suggest color keys
+            // Inside a theme: named style blocks (current format)
+            for (const style of themeStyleKeys) {
+                const item = new vscode.CompletionItem(style.name, vscode.CompletionItemKind.Color);
+                item.documentation = new vscode.MarkdownString(style.description);
+                if (style.name === 'multiplayer_user_colors') {
+                    item.insertText = new vscode.SnippetString(`${style.name} {\n\tplayer_1 \${1:255} \${2:0} \${3:0}\n}`);
+                } else {
+                    item.insertText = new vscode.SnippetString(
+                        `${style.name} {\n\tbase \${1:255} \${2:255} \${3:255}\n\tbackground \${4:0} \${5:0} \${6:0}\n}`
+                    );
+                }
+                items.push(item);
+            }
+            // Legacy flat palette keys are still supported
             for (const color of themeColors) {
                 const item = new vscode.CompletionItem(color.name, vscode.CompletionItemKind.Color);
-                item.documentation = new vscode.MarkdownString(color.description);
-                item.insertText = new vscode.SnippetString(`${color.name} "\${1:#000000}"`);
+                item.documentation = new vscode.MarkdownString(`${color.description} (legacy flat palette theme)`);
+                item.insertText = new vscode.SnippetString(`${color.name} \${1:255} \${2:255} \${3:255}`);
                 items.push(item);
+            }
+        }
+
+        if (ctx.depth === 3) {
+            const styleKey = ctx.path[2];
+            if (styleKey === 'multiplayer_user_colors') {
+                for (const key of multiplayerColorKeys) {
+                    const item = new vscode.CompletionItem(key, vscode.CompletionItemKind.Color);
+                    item.documentation = new vscode.MarkdownString(`Color for ${key.replace('_', ' ')}`);
+                    item.insertText = new vscode.SnippetString(`${key} \${1:255} \${2:255} \${3:255}`);
+                    items.push(item);
+                }
+            } else if (styleKey && themeStyleKeys.some(s => s.name === styleKey)) {
+                for (const key of styleDeclarationKeys) {
+                    const item = new vscode.CompletionItem(key.name, vscode.CompletionItemKind.Color);
+                    item.documentation = new vscode.MarkdownString(key.description);
+                    item.insertText = new vscode.SnippetString(`${key.name} \${1:255} \${2:255} \${3:255}`);
+                    items.push(item);
+                }
             }
         }
 

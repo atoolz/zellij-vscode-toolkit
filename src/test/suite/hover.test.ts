@@ -71,6 +71,31 @@ suite('Zellij Hover Provider', () => {
         assert.ok(text.includes('SwitchToMode'), 'Should mention the action name');
     });
 
+    test('provides layout element hover for pane inside a layout', async () => {
+        const content = 'layout {\n    default_tab_template {\n        pane size=1 borderless=true {\n            plugin location="zellij:tab-bar"\n        }\n        children\n    }\n}';
+        const hovers = await getHovers(content, 2, 10);
+        assert.ok(hovers.length > 0, 'Should provide hover for pane');
+        const text = getHoverText(hovers);
+        assert.ok(text.includes('Layout: pane'), 'Should describe the layout pane element, not the pane mode');
+        assert.ok(text.includes('layouts.html'), 'Should link to the layouts documentation');
+    });
+
+    test('provides layout element hover for tab inside a layout', async () => {
+        const content = 'layout {\n    tab name="main" {\n    }\n}';
+        const hovers = await getHovers(content, 1, 6);
+        assert.ok(hovers.length > 0, 'Should provide hover for tab');
+        const text = getHoverText(hovers);
+        assert.ok(text.includes('Layout: tab'), 'Should describe the layout tab element, not the tab mode');
+    });
+
+    test('keeps mode hover for pane inside keybinds', async () => {
+        const content = 'keybinds {\n    pane {\n        bind "x" { CloseFocus; }\n    }\n}';
+        const hovers = await getHovers(content, 1, 6);
+        assert.ok(hovers.length > 0, 'Should provide hover for pane mode');
+        const text = getHoverText(hovers);
+        assert.ok(text.includes('Mode: pane'), 'Should describe the pane input mode');
+    });
+
     test('provides hover for mode name in keybinds', async () => {
         const content = 'keybinds {\n    normal {\n    }\n}';
         const hovers = await getHovers(content, 1, 7);

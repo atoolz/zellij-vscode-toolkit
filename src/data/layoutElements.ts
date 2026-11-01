@@ -14,7 +14,12 @@ export interface LayoutAttribute {
     example: string;
 }
 
-const BASE_DOC_URL = 'https://zellij.dev/documentation/layouts';
+const DOCS_BASE_URL = 'https://zellij.dev/documentation';
+
+/** Deep link to the layout documentation, highlighting this element. */
+function layoutDocUrl(name: string): string {
+    return `${DOCS_BASE_URL}/layouts.html?highlight=${name}#layout-configuration-language`;
+}
 
 export const layoutElements: LayoutElement[] = [
     {
@@ -22,7 +27,7 @@ export const layoutElements: LayoutElement[] = [
         description: 'Root node of a Zellij layout file. Contains pane definitions, tab templates, and swap layouts.',
         attributes: [],
         children: ['pane', 'tab', 'pane_template', 'tab_template', 'default_tab_template', 'swap_tiled_layout', 'swap_floating_layout', 'floating_panes'],
-        docUrl: BASE_DOC_URL,
+        docUrl: layoutDocUrl('layout'),
     },
     {
         name: 'pane',
@@ -103,7 +108,7 @@ export const layoutElements: LayoutElement[] = [
             },
         ],
         children: ['pane', 'plugin', 'args'],
-        docUrl: BASE_DOC_URL,
+        docUrl: layoutDocUrl('pane'),
     },
     {
         name: 'tab',
@@ -137,7 +142,7 @@ export const layoutElements: LayoutElement[] = [
             },
         ],
         children: ['pane', 'floating_panes'],
-        docUrl: BASE_DOC_URL,
+        docUrl: layoutDocUrl('tab'),
     },
     {
         name: 'pane_template',
@@ -170,7 +175,7 @@ export const layoutElements: LayoutElement[] = [
             },
         ],
         children: ['pane', 'children', 'plugin'],
-        docUrl: BASE_DOC_URL,
+        docUrl: layoutDocUrl('pane_template'),
     },
     {
         name: 'tab_template',
@@ -184,14 +189,14 @@ export const layoutElements: LayoutElement[] = [
             },
         ],
         children: ['pane', 'children', 'floating_panes'],
-        docUrl: BASE_DOC_URL,
+        docUrl: layoutDocUrl('tab_template'),
     },
     {
         name: 'default_tab_template',
         description: 'Defines the default template for new tabs. Applied to all tabs that do not use a specific template.',
         attributes: [],
         children: ['pane', 'children', 'floating_panes'],
-        docUrl: BASE_DOC_URL,
+        docUrl: layoutDocUrl('default_tab_template'),
     },
     {
         name: 'swap_tiled_layout',
@@ -205,7 +210,7 @@ export const layoutElements: LayoutElement[] = [
             },
         ],
         children: ['tab'],
-        docUrl: BASE_DOC_URL,
+        docUrl: layoutDocUrl('swap_tiled_layout'),
     },
     {
         name: 'swap_floating_layout',
@@ -219,7 +224,7 @@ export const layoutElements: LayoutElement[] = [
             },
         ],
         children: ['floating_panes'],
-        docUrl: BASE_DOC_URL,
+        docUrl: layoutDocUrl('swap_floating_layout'),
     },
     {
         name: 'plugin',
@@ -233,28 +238,28 @@ export const layoutElements: LayoutElement[] = [
             },
         ],
         children: [],
-        docUrl: BASE_DOC_URL,
+        docUrl: layoutDocUrl('plugin'),
     },
     {
         name: 'children',
         description: 'Placeholder node in templates. Replaced with actual content when the template is used.',
         attributes: [],
         children: [],
-        docUrl: BASE_DOC_URL,
+        docUrl: layoutDocUrl('children'),
     },
     {
         name: 'floating_panes',
         description: 'Container for floating pane definitions within a tab or layout.',
         attributes: [],
         children: ['pane'],
-        docUrl: BASE_DOC_URL,
+        docUrl: layoutDocUrl('floating_panes'),
     },
     {
         name: 'args',
         description: 'Arguments to pass to the command in a pane.',
         attributes: [],
         children: [],
-        docUrl: BASE_DOC_URL,
+        docUrl: layoutDocUrl('args'),
     },
 ];
 

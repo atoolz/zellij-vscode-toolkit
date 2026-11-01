@@ -15,7 +15,18 @@ const ALL_LAYOUT_ELEMENT_NAMES = new Set(layoutElements.map(e => e.name));
 
 const TOP_LEVEL_BLOCKS = new Set(['keybinds', 'themes', 'plugins', 'load_plugins', 'ui', 'env']);
 const KEYBIND_BLOCKS = new Set([...modeNames, 'shared', 'shared_except', 'shared_among', 'tmux']);
-const THEME_COLORS = new Set(['fg', 'bg', 'black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'orange']);
+const THEME_PALETTE_KEYS = new Set(['fg', 'bg', 'black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'orange']);
+const THEME_STYLE_KEYS = new Set([
+    'text_unselected', 'text_selected',
+    'ribbon_unselected', 'ribbon_selected',
+    'table_title', 'table_cell_unselected', 'table_cell_selected',
+    'list_unselected', 'list_selected',
+    'frame_unselected', 'frame_selected', 'frame_highlight',
+    'exit_code_success', 'exit_code_error',
+    'multiplayer_user_colors',
+]);
+const STYLE_DECLARATION_KEYS = new Set(['base', 'background', 'emphasis_0', 'emphasis_1', 'emphasis_2', 'emphasis_3']);
+const PLAYER_COLOR_KEYS = new Set(Array.from({ length: 10 }, (_, i) => `player_${i + 1}`));
 
 function escapeRegExp(s: string): string {
     return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -193,14 +204,32 @@ export class ZellijDiagnosticProvider {
             }
         }
 
-        // Inside themes, validate color names
+        // Inside themes, validate theme keys and the shape of style blocks
         if (depth === 2 && contextStack[0] === 'themes') {
-            if (!THEME_COLORS.has(nodeName)) {
+            if (!THEME_STYLE_KEYS.has(nodeName) && !THEME_PALETTE_KEYS.has(nodeName)) {
                 const range = this.getWordRange(line, nodeName);
                 if (range) {
                     const diag = new vscode.Diagnostic(
                         range,
-                        `Unknown theme color: "${nodeName}". Valid colors: ${[...THEME_COLORS].join(', ')}`,
+                        `Unknown theme key: "${nodeName}". Valid keys: ${[...THEME_STYLE_KEYS].join(', ')} (or legacy palette keys: ${[...THEME_PALETTE_KEYS].join(', ')})`,
+                        vscode.DiagnosticSeverity.Warning
+                    );
+                    diag.source = 'zellij';
+                    diagnostics.push(diag);
+                }
+            }
+        }
+
+        // Inside a named style block (or multiplayer_user_colors)
+        if (depth === 3 && contextStack[0] === 'themes' && THEME_STYLE_KEYS.has(contextStack[2])) {
+            const parent = contextStack[2];
+            const valid = parent === 'multiplayer_user_colors' ? PLAYER_COLOR_KEYS : STYLE_DECLARATION_KEYS;
+            if (!valid.has(nodeName)) {
+                const range = this.getWordRange(line, nodeName);
+                if (range) {
+                    const diag = new vscode.Diagnostic(
+                        range,
+                        `Unknown key: "${nodeName}" in "${parent}". Valid keys: ${[...valid].join(', ')}`,
                         vscode.DiagnosticSeverity.Warning
                     );
                     diag.source = 'zellij';
