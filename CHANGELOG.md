@@ -1,5 +1,45 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Config option list updated to Zellij 0.45.1 (`Options::from_kdl`): 36 missing
+  options (`pane_frame_style`, `show_startup_tips`, `show_release_notes`,
+  `mouse_hover_tips`, `mouse_hover_effects`, `advanced_mouse_actions`,
+  `stacked_pane_list`, `scroll_mode_sync`, `nested_session_handling`,
+  `web_server*`, `osc8_hyperlinks`, `osc133_command_selection`, ...) no longer
+  reported as "Unknown config option"
+- Removed three options that do not exist in Zellij
+  (`stacked_pane_resize_algorithm`, `stacked_resize_up_start_count`,
+  `stacked_resize_down_start_count`)
+- `default_mode` valid values now match `InputMode::from_str`
+  (`renametab`, `renamepane`, `entersearch`, `tmux`)
+- Theme validation supports the named style format introduced in Zellij 0.43
+  (`text_unselected`, `ribbon_selected`, `multiplayer_user_colors`, ...) while
+  still accepting legacy flat palette themes. Style blocks are validated for
+  `base`/`background`/`emphasis_0..3` and `multiplayer_user_colors` for
+  `player_1..player_10`
+
+### Added
+
+- Completions and hover docs for the new options and the named-style theme
+  format (RGB triplet / 8-bit / hex palette values)
+- Deep documentation links: options link to
+  `options.html?highlight=<name>#<name>` (with aliases for the few options
+  documented under a different anchor), theme keys to
+  `themes.html?highlight=<key>#<key>`, and actions/layout elements highlight
+  their entry on the keybindings/layouts pages
+
+### Fixed
+
+- Inside layout files, hovering `pane` / `tab` now shows the layout element
+  instead of the same-named input mode (the mode/keybind hover is now limited
+  to config files)
+- Action and layout-element documentation links pointed at
+  `keybindings-actions`, which no longer exists (404); they now target
+  `keybindings.html` / `layouts.html`
+
 ## [0.1.8] - 2026-03-22
 
 ### Fixed

@@ -1,11 +1,22 @@
 import * as vscode from 'vscode';
 import { getWordAtPosition, getKdlContext } from '../utils/kdlParser';
 import { logError } from '../extension';
-import { configOptions, uiOptions, topLevelBlocks, themeColors } from '../data/options';
+import { configOptions, uiOptions, topLevelBlocks, themeColors, themeStyleKeys, styleDeclarationKeys, multiplayerColorKeys, themeDocUrl } from '../data/options';
 import { actions } from '../data/actions';
 import { modes, keybindBlocks } from '../data/modes';
 import { layoutElements } from '../data/layoutElements';
 import { builtinPlugins } from '../data/builtinPlugins';
+import { isLayoutFile } from '../utils/configDetector';
+
+/** Doc pages for the top-level config blocks. */
+const TOP_LEVEL_BLOCK_DOC_URLS: Record<string, string> = {
+    keybinds: 'https://zellij.dev/documentation/keybindings.html',
+    themes: 'https://zellij.dev/documentation/themes.html',
+    plugins: 'https://zellij.dev/documentation/plugins.html',
+    load_plugins: 'https://zellij.dev/documentation/plugins.html',
+    ui: 'https://zellij.dev/documentation/options.html?highlight=pane_frames#pane_frames',
+    env: 'https://zellij.dev/documentation/options.html?highlight=env#env',
+};
 
 export class ZellijHoverProvider implements vscode.HoverProvider {
     provideHover(
@@ -31,6 +42,9 @@ export class ZellijHoverProvider implements vscode.HoverProvider {
         }
 
         const ctx = getKdlContext(document, position);
+        // A layout element (pane, tab, ...) can share its name with an input mode
+        // (pane, tab, ...). Inside layout files the layout element wins.
+        const isLayout = isLayoutFile(document) || ctx.path[0] === 'layout';
 
         if (ctx.inComment) {
             return undefined;
@@ -48,7 +62,7 @@ export class ZellijHoverProvider implements vscode.HoverProvider {
             const md = new vscode.MarkdownString();
             md.appendMarkdown(`## ${block.name}\n\n`);
             md.appendMarkdown(`${block.description}\n\n`);
-            md.appendMarkdown(`[Zellij Documentation](https://zellij.dev/documentation)`);
+            md.appendMarkdown(`[Zellij Documentation](${TOP_LEVEL_BLOCK_DOC_URLS[block.name] ?? 'https://zellij.dev/documentation'})`);
             return new vscode.Hover(md);
         }
 
@@ -58,18 +72,18 @@ export class ZellijHoverProvider implements vscode.HoverProvider {
             return this.createActionHover(action);
         }
 
-        // Try modes
-        const mode = modes.find(m => m.name === word);
+        // Try modes (not in layout files, where e.g. `pane`/`tab` are layout elements)
+        const mode = isLayout ? undefined : modes.find(m => m.name === word);
         if (mode) {
             const md = new vscode.MarkdownString();
             md.appendMarkdown(`## Mode: ${mode.name}\n\n`);
             md.appendMarkdown(`${mode.description}\n\n`);
-            md.appendMarkdown(`[Zellij Modes Documentation](https://zellij.dev/documentation/keybindings)`);
+            md.appendMarkdown(`[Zellij Modes Documentation](https://zellij.dev/documentation/keybindings-modes.html?highlight=${mode.name}#modes)`);
             return new vscode.Hover(md);
         }
 
-        // Try keybind blocks (shared, shared_except, etc.)
-        const kbBlock = keybindBlocks.find(b => b.name === word);
+        // Try keybind blocks (shared, shared_except, etc.) - keybinds only
+        const kbBlock = isLayout ? undefined : keybindBlocks.find(b => b.name === word);
         if (kbBlock && !mode) {
             const md = new vscode.MarkdownString();
             md.appendMarkdown(`## ${kbBlock.name}\n\n`);
@@ -83,15 +97,44 @@ export class ZellijHoverProvider implements vscode.HoverProvider {
             return this.createLayoutElementHover(layoutEl);
         }
 
-        // Try theme colors
-        const themeColor = themeColors.find(c => c.name === word);
-        if (themeColor && ctx.path.includes('themes')) {
-            const md = new vscode.MarkdownString();
-            md.appendMarkdown(`## Theme Color: ${themeColor.name}\n\n`);
-            md.appendMarkdown(`${themeColor.description}\n\n`);
-            md.appendMarkdown(`**Value:** A hex color string (e.g., \`"#ff0000"\`)\n\n`);
-            md.appendMarkdown(`[Zellij Themes Documentation](https://zellij.dev/documentation/themes)`);
-            return new vscode.Hover(md);
+        // Try theme keys (named style blocks, style fields, legacy palette)
+        if (ctx.path.includes('themes')) {
+            const styleKey = themeStyleKeys.find(c => c.name === word);
+            if (styleKey) {
+                const md = new vscode.MarkdownString();
+                md.appendMarkdown(`## Theme Style: ${styleKey.name}\n\n`);
+                md.appendMarkdown(`${styleKey.description}\n\n`);
+                md.appendMarkdown('**Children:** `base`, `background`, `emphasis_0` .. `emphasis_3`, each a palette color;\n');
+                md.appendMarkdown('`multiplayer_user_colors` takes `player_1` .. `player_10`.\n\n');
+                md.appendMarkdown(`[Zellij Themes Documentation](${themeDocUrl(styleKey.name)})`);
+                return new vscode.Hover(md);
+            }
+            const styleField = styleDeclarationKeys.find(c => c.name === word);
+            if (styleField) {
+                const md = new vscode.MarkdownString();
+                md.appendMarkdown(`## Style Field: ${styleField.name}\n\n`);
+                md.appendMarkdown(`${styleField.description}\n\n`);
+                md.appendMarkdown('**Value:** a palette color: `R G B` (0-255 each), an 8-bit index (`0`-`255`), or a hex string (`"#rrggbb"`).\n\n');
+                md.appendMarkdown(`[Zellij Themes Documentation](${themeDocUrl(ctx.path[2])})`);
+                return new vscode.Hover(md);
+            }
+            if (multiplayerColorKeys.includes(word)) {
+                const md = new vscode.MarkdownString();
+                md.appendMarkdown(`## Multiplayer Color: ${word}\n\n`);
+                md.appendMarkdown('Color assigned to this player slot in multiplayer sessions.\n\n');
+                md.appendMarkdown('**Value:** a palette color (`R G B`, an 8-bit index, or `"#rrggbb"`).\n\n');
+                md.appendMarkdown(`[Zellij Themes Documentation](${themeDocUrl('multiplayer_user_colors')})`);
+                return new vscode.Hover(md);
+            }
+            const themeColor = themeColors.find(c => c.name === word);
+            if (themeColor) {
+                const md = new vscode.MarkdownString();
+                md.appendMarkdown(`## Theme Color: ${themeColor.name}\n\n`);
+                md.appendMarkdown(`${themeColor.description} (legacy flat palette theme)\n\n`);
+                md.appendMarkdown('**Value:** a palette color: `R G B` (0-255 each), an 8-bit index, or a hex string (`"#rrggbb"`).\n\n');
+                md.appendMarkdown(`[Zellij Themes Documentation](${themeDocUrl()})`);
+                return new vscode.Hover(md);
+            }
         }
 
         // Try built-in plugin names
@@ -102,7 +145,7 @@ export class ZellijHoverProvider implements vscode.HoverProvider {
                 md.appendMarkdown(`## Plugin: ${plugin.name}\n\n`);
                 md.appendMarkdown(`${plugin.description}\n\n`);
                 md.appendMarkdown(`**Location:** \`${plugin.location}\`\n\n`);
-                md.appendMarkdown(`[Zellij Plugins Documentation](https://zellij.dev/documentation/plugins)`);
+                md.appendMarkdown(`[Zellij Plugins Documentation](https://zellij.dev/documentation/plugins.html)`);
                 return new vscode.Hover(md);
             }
         }
@@ -116,7 +159,7 @@ export class ZellijHoverProvider implements vscode.HoverProvider {
             md.appendMarkdown('**Key modifiers:** `Ctrl`, `Alt`, `Shift`\n\n');
             md.appendMarkdown('**Special keys:** `Enter`, `Esc`, `Tab`, `Backspace`, `Delete`, `Home`, `End`, `PageUp`, `PageDown`, `Up`, `Down`, `Left`, `Right`, `F1`-`F12`\n\n');
             md.appendMarkdown('**Example:**\n```kdl\nbind "Ctrl a" { SwitchToMode "locked"; }\n```\n\n');
-            md.appendMarkdown('[Zellij Keybindings](https://zellij.dev/documentation/keybindings)');
+            md.appendMarkdown('[Zellij Keybindings](https://zellij.dev/documentation/keybindings.html#configuring-keybindings)');
             return new vscode.Hover(md);
         }
 
